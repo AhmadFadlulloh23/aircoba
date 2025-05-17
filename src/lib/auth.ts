@@ -5,10 +5,10 @@ import type { User } from '@/types';
 
 const MOCK_USER: User = {
   id: '1',
-  email: 'user@example.com',
-  name: 'Aqua User',
+  email: 'ahmadfadlulloh023@gmail.com',
+  name: 'Ahmad Fadlulloh',
   photoUrl: 'https://placehold.co/200x200.png', // Placeholder profile picture
-  idNumber: '1234567890123456', // Example NIK/NIM/NIP
+  idNumber: '1103213040', // Example NIK/NIM/NIP
 };
 
 const MOCK_PASSWORD = 'password';
