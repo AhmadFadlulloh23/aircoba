@@ -11,7 +11,7 @@ const MOCK_USER: User = {
   idNumber: '1103213040', // Example NIK/NIM/NIP
 };
 
-const MOCK_PASSWORD = 'password';
+const MOCK_PASSWORD = 'onezero23';
 
 export async function login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
   const normalizedEmail = email.trim().toLowerCase();
@@ -55,3 +55,4 @@ export function getCurrentUser(): User | null {
   }
   return null;
 }
+
