@@ -51,8 +51,9 @@ export function CurrentDateTime() {
       </div>
       <div className="flex items-center">
         <Clock className="mr-2 h-5 w-5 text-primary" />
-        <span className="font-medium text-lg">{formattedTime}</span>
+        <span className="font-semibold text-xl text-foreground">{formattedTime}</span>
       </div>
     </div>
   );
 }
+
