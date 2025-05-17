@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AppLogo } from "@/components/AppLogo";
@@ -23,8 +24,18 @@ export function Header() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setCurrentUser(getCurrentUser());
-  }, []);
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    } else {
+      // If no user, redirect to login, but only if not already on login/register page
+      // to prevent redirect loops if Header is somehow rendered there.
+      // However, typically Header is only on protected routes.
+      if (typeof window !== 'undefined' && !['/login', '/register'].includes(window.location.pathname)) {
+        router.replace("/login");
+      }
+    }
+  }, [router]);
 
   const handleLogout = async () => {
     await logout();
@@ -48,13 +59,13 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={`https://avatar.vercel.sh/${userEmail}.png`} alt={userName} />
+                    <AvatarImage src={`https://avatar.vercel.sh/${userEmail}.png?text=${avatarFallback}`} alt={userName} />
                     <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
+                <DropdownMenuLabel className="font-normal py-2">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-semibold leading-none">{userName}</p>
                     <p className="text-xs leading-none text-muted-foreground">
@@ -63,16 +74,16 @@ export function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                <DropdownMenuItem onClick={() => router.push('/dashboard')} className="py-2">
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem disabled className="py-2">
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="py-2">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
