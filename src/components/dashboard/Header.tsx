@@ -45,6 +45,8 @@ export function Header() {
   const userName = currentUser?.name || "User";
   const userEmail = currentUser?.email || "";
   const avatarFallback = userName.substring(0, 1).toUpperCase() || "U";
+  const avatarTextFallback = currentUser?.name ? currentUser.name.substring(0, 2).toUpperCase() : (currentUser?.email ? currentUser.email.substring(0,1).toUpperCase() : "U");
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -59,8 +61,8 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={`https://avatar.vercel.sh/${userEmail}.png?text=${avatarFallback}`} alt={userName} />
-                    <AvatarFallback>{avatarFallback}</AvatarFallback>
+                    <AvatarImage src={currentUser.photoUrl || `https://avatar.vercel.sh/${userEmail}.png?text=${avatarTextFallback}`} alt={userName} />
+                    <AvatarFallback>{avatarTextFallback}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -78,7 +80,7 @@ export function Header() {
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled className="py-2">
+                <DropdownMenuItem onClick={() => router.push('/profile')} className="py-2">
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
