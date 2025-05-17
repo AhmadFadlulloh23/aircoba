@@ -62,7 +62,7 @@ const MonthlyRecapSchema = z.object({
 });
 
 const GenerateWaterQualitySummaryOutputSchema = z.object({
-  overallAssessment: z.string().describe('A high-level, plain-English overview of the current water quality.'),
+  overallAssessment: z.string().describe('A concise yet insightful synthesis of the current water quality, highlighting implications for the aquatic ecosystem or system health, and providing a confident, forward-looking executive summary tone.'),
   detailedAnalysis: z.array(DetailedAnalysisSchema).describe("An array providing detailed analysis for each water parameter based on its current value and status."),
   hourlyTrendAnalysis: z.object({
     introduction: z.string().describe("A brief introduction to the hourly trend analysis section."),
@@ -97,7 +97,7 @@ Current Water Quality Parameters:
 
 Please generate the following structured analysis:
 
-1.  **Overall Assessment**: A high-level, plain-English overview of the current water quality.
+1.  **Overall Assessment**: Provide a concise yet insightful synthesis of the current water quality. Highlight not just the status (e.g., normal, stable) but also what this implies for the aquatic ecosystem or system health. If all parameters are optimal, suggest the positive implications. If there are minor deviations even within 'normal', briefly note if they warrant observation. Aim for an executive summary tone – clear, confident, and forward-looking.
 
 2.  **Detailed Analysis (for each parameter)**:
     For each parameter (pH, Salinity, DO, Temperature), provide a specific analysis covering:
@@ -202,5 +202,7 @@ const generateWaterQualitySummaryFlow = ai.defineFlow(
     }
   }
 );
+
+    
 
     
