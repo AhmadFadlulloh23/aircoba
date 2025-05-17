@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "393394318070",
+    "project_id": "watershrimp",
+    "storage_bucket": "watershrimp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:393394318070:android:6795527240f52c8bca9ad7",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwRhFpfFz-CZKVLfIl1Q7BDh_tdMspdas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
