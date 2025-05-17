@@ -90,7 +90,7 @@ export function ParameterCard({ parameter, onNormalize, isNormalizing }: Paramet
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full text-accent-foreground border-accent hover:bg-accent/10"
+            className="w-full text-accent border-accent hover:bg-accent/10"
             onClick={() => onNormalize(parameter.id)}
             disabled={isNormalizing}
           >
