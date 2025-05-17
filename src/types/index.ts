@@ -34,7 +34,7 @@ export interface WaterParameterData {
 }
 
 // Mirroring the structured AI output
-export type AISummary = GenerateWaterQualitySummaryOutput; // This will now include weeklyRecap
+export type AISummary = GenerateWaterQualitySummaryOutput;
 
 export interface HourlyTrend {
   parameterName: string;
@@ -50,8 +50,8 @@ export interface InstabilityInfo {
   predictiveInsights?: string;
 }
 
-// Types for the new Weekly Recap structure
-export interface WeeklySensorReading {
+// Types for the Monthly Recap structure
+export interface DailySensorReading {
   day: string;
   avgPh?: number | null;
   avgSalinity?: number | null;
@@ -60,9 +60,9 @@ export interface WeeklySensorReading {
   notes?: string;
 }
 
-export interface WeeklyRecap {
+export interface MonthlyRecap {
   recapTitle: string;
-  sensorDataTable: WeeklySensorReading[];
+  sensorDataTable: DailySensorReading[];
   graphicalTrendSummary: string;
   dataSufficiencyNote?: string;
 }
@@ -76,7 +76,7 @@ export interface StructuredAISummary {
     parameterTrends: HourlyTrend[];
   };
   instabilityDiagnosis?: InstabilityInfo[];
-  weeklyRecap?: WeeklyRecap; // Changed from generalRecommendations
+  monthlyRecap?: MonthlyRecap;
 }
 
     

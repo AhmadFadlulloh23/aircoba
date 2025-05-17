@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from "@/components/ui/table";
 import { initialWaterParameters, calculateStatus, parameterUnits, parameterDisplayNames } from "@/lib/water-quality-config";
-import type { WaterParameterData, StructuredAISummary, HourlyTrend, InstabilityInfo, WeeklySensorReading } from "@/types";
+import type { WaterParameterData, StructuredAISummary, HourlyTrend, InstabilityInfo, DailySensorReading, MonthlyRecap } from "@/types"; // Updated types
 import { getAISummaryAction } from "@/app/dashboard/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, Sparkles, FileText, Thermometer, Droplet, Wind, Activity, BarChart3, Brain, CalendarDays, LineChart as LineChartIcon } from "lucide-react";
@@ -20,7 +20,7 @@ import type { GenerateWaterQualitySummaryInput, GenerateWaterQualitySummaryOutpu
 const MAX_HISTORY_LENGTH = 20; // For live graphs
 const SIMULATION_INTERVAL = 3000; // 3 seconds for live graph updates
 const STATUS_NOTIFICATION_INTERVAL = 30000; // 30 seconds for status change checks
-const AI_HOURLY_VALUES_COUNT = 7 * 24; // Simulate 7 days of hourly data for AI
+const AI_HOURLY_VALUES_COUNT = 30 * 24; // Simulate 30 days of hourly data for AI
 
 export default function WaterQualityClientPage() {
   const router = useRouter();
@@ -113,8 +113,6 @@ export default function WaterQualityClientPage() {
 
   const handleNormalizeParameter = useCallback(async (parameterId: string) => {
     setIsNormalizing(prev => ({ ...prev, [parameterId]: true }));
-    // For this demo, we'll use a client-side normalization helper.
-    // In a real app, this might call a server action if normalization has side effects or needs logging.
     const { normalizeParameter: getNormalizedValueClient } = await import("@/lib/water-quality-config");
     const newValue = getNormalizedValueClient(parameterId);
     const { status: newStatus, color: newColor } = calculateStatus(parameterId, newValue);
@@ -142,7 +140,7 @@ export default function WaterQualityClientPage() {
       let lastVal = param.value;
       for (let i = 0; i < AI_HOURLY_VALUES_COUNT; i++) { 
         const fluctuationRange = param.id === 'ph' ? 0.5 : (param.id === 'salinity' ? 5 : (param.id === 'do' ? 1 : 2));
-        lastVal = lastVal + (Math.random() - 0.5) * fluctuationRange * ( (i % 24 < 6 || i % 24 > 18) ? 0.8 : 1.2); // Simulate some day/night cycle
+        lastVal = lastVal + (Math.random() - 0.5) * fluctuationRange * ( (i % 24 < 6 || i % 24 > 18) ? 0.8 : 1.2); 
         
         if (param.id === 'ph') lastVal = Math.max(5, Math.min(9.5, lastVal));
         else if (param.id === 'salinity') lastVal = Math.max(20, Math.min(48, lastVal));
@@ -184,11 +182,11 @@ export default function WaterQualityClientPage() {
           basicRecommendations: id.basicRecommendations,
           predictiveInsights: id.predictiveInsights
         })) : undefined,
-        weeklyRecap: summaryResult.weeklyRecap ? {
-          recapTitle: summaryResult.weeklyRecap.recapTitle,
-          sensorDataTable: summaryResult.weeklyRecap.sensorDataTable,
-          graphicalTrendSummary: summaryResult.weeklyRecap.graphicalTrendSummary,
-          dataSufficiencyNote: summaryResult.weeklyRecap.dataSufficiencyNote
+        monthlyRecap: summaryResult.monthlyRecap ? { // Updated from weeklyRecap
+          recapTitle: summaryResult.monthlyRecap.recapTitle,
+          sensorDataTable: summaryResult.monthlyRecap.sensorDataTable,
+          graphicalTrendSummary: summaryResult.monthlyRecap.graphicalTrendSummary,
+          dataSufficiencyNote: summaryResult.monthlyRecap.dataSufficiencyNote
         } : undefined,
       });
     }
@@ -331,20 +329,20 @@ export default function WaterQualityClientPage() {
                   </Accordion>
                 )}
 
-                {aiSummary.weeklyRecap && (
-                  <Accordion type="single" collapsible className="w-full" defaultValue="weekly-recap">
-                    <AccordionItem value="weekly-recap">
+                {aiSummary.monthlyRecap && ( // Changed from weeklyRecap
+                  <Accordion type="single" collapsible className="w-full" defaultValue="monthly-recap">
+                    <AccordionItem value="monthly-recap">
                       <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                        <div className="flex items-center"><CalendarDays className="mr-2 h-5 w-5"/>{aiSummary.weeklyRecap.recapTitle || "Weekly Sensor Data Recap"}</div>
+                        <div className="flex items-center"><CalendarDays className="mr-2 h-5 w-5"/>{aiSummary.monthlyRecap.recapTitle || "Monthly Sensor Data Recap"}</div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 space-y-4">
-                        {aiSummary.weeklyRecap.dataSufficiencyNote && (
-                          <p className="text-sm text-muted-foreground italic">{aiSummary.weeklyRecap.dataSufficiencyNote}</p>
+                        {aiSummary.monthlyRecap.dataSufficiencyNote && (
+                          <p className="text-sm text-muted-foreground italic">{aiSummary.monthlyRecap.dataSufficiencyNote}</p>
                         )}
-                        {aiSummary.weeklyRecap.sensorDataTable && aiSummary.weeklyRecap.sensorDataTable.length > 0 ? (
+                        {aiSummary.monthlyRecap.sensorDataTable && aiSummary.monthlyRecap.sensorDataTable.length > 0 ? (
                           <Card>
                             <CardHeader>
-                              <CardTitle className="text-lg">Daily Average Sensor Readings</CardTitle>
+                              <CardTitle className="text-lg">Daily Average Sensor Readings (Monthly)</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <Table>
@@ -359,7 +357,7 @@ export default function WaterQualityClientPage() {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {aiSummary.weeklyRecap.sensorDataTable.map((reading: WeeklySensorReading, index: number) => (
+                                  {aiSummary.monthlyRecap.sensorDataTable.map((reading: DailySensorReading, index: number) => (
                                     <TableRow key={index}>
                                       <TableCell className="font-medium">{reading.day}</TableCell>
                                       <TableCell className="text-center">{reading.avgPh?.toFixed(1) ?? '-'}</TableCell>
@@ -370,19 +368,19 @@ export default function WaterQualityClientPage() {
                                     </TableRow>
                                   ))}
                                 </TableBody>
-                                {aiSummary.weeklyRecap.sensorDataTable.length === 0 && (
-                                   <TableCaption>No daily data available for the table.</TableCaption>
+                                {aiSummary.monthlyRecap.sensorDataTable.length === 0 && (
+                                   <TableCaption>No daily data available for the table for this month.</TableCaption>
                                 )}
                               </Table>
                             </CardContent>
                           </Card>
                         ) : (
-                          <p className="text-sm text-muted-foreground">No detailed daily data available to display in a table.</p>
+                          <p className="text-sm text-muted-foreground">No detailed daily data available to display in a table for this month.</p>
                         )}
 
                         <div className="p-4 border rounded-lg bg-background mt-4">
-                           <h4 className="text-lg font-semibold text-primary mb-2 flex items-center"><LineChartIcon className="mr-2 h-5 w-5"/>Graphical Trend Summary (Weekly)</h4>
-                           <p className="text-sm text-foreground">{aiSummary.weeklyRecap.graphicalTrendSummary || "No graphical trend summary available."}</p>
+                           <h4 className="text-lg font-semibold text-primary mb-2 flex items-center"><LineChartIcon className="mr-2 h-5 w-5"/>Graphical Trend Summary (Monthly)</h4>
+                           <p className="text-sm text-foreground">{aiSummary.monthlyRecap.graphicalTrendSummary || "No monthly graphical trend summary available."}</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>

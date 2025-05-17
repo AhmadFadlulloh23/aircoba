@@ -1,3 +1,4 @@
+
 "use server";
 
 import { generateWaterQualitySummary, type GenerateWaterQualitySummaryInput, type GenerateWaterQualitySummaryOutput } from "@/ai/flows/generate-water-quality-summary";
@@ -23,7 +24,12 @@ export async function getAISummaryAction(
         parameterTrends: [],
       },
       instabilityDiagnosis: [],
-      generalRecommendations: ["Please try generating the summary again later."],
+      monthlyRecap: { // Ensure fallback matches the new schema structure for monthlyRecap
+        recapTitle: "Monthly Recap Generation Failed",
+        sensorDataTable: [],
+        graphicalTrendSummary: "Could not generate monthly graphical trend summary due to an error.",
+        dataSufficiencyNote: `Error: ${errorMessage}`,
+      },
     };
   }
 }
@@ -50,3 +56,5 @@ export async function normalizeParameterAction(
     return { success: false, parameterName: parameterId, error: `Failed to normalize: ${errorMessage}` };
   }
 }
+
+    
