@@ -130,9 +130,6 @@ export function LoginForm() {
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
         </form>
-         <p className="mt-4 text-center text-sm text-muted-foreground">
-            (Demo credentials: user@example.com / password)
-        </p>
       </CardContent>
       <CardFooter className="flex flex-col items-center space-y-2">
         <p className="text-sm text-muted-foreground">
