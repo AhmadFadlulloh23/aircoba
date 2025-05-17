@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Header } from "./Header";
 import { ParameterCard } from "./ParameterCard";
 import { Button } from "@/components/ui/button";
+import { CurrentDateTime } from "./CurrentDateTime"; // Added import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from "@/components/ui/table";
@@ -86,11 +87,11 @@ export default function WaterQualityClientPage() {
       });
 
       if (statusChanges.length > 0) {
-        const changedParamDetails = statusChanges.map(s => `${s.name} changed to ${s.newStatus}`).join(', ');
+        const changedParamDetails = statusChanges.map(s => `${s.name} berubah menjadi ${s.newStatus}`).join(', ');
         setTimeout(() => { 
           toast({
-            title: "Water Quality Alert",
-            description: `Status updated: ${changedParamDetails}.`,
+            title: "Peringatan Kualitas Air",
+            description: `Status diperbarui: ${changedParamDetails}.`,
             variant: "default",
             duration: 5000,
           });
@@ -125,8 +126,8 @@ export default function WaterQualityClientPage() {
         )
     );
     toast({
-        title: "Parameter Normalized",
-        description: `${parameterDisplayNames[parameterId] || parameterId} has been reset to a normal value.`,
+        title: "Parameter Dinormalisasi",
+        description: `${parameterDisplayNames[parameterId] || parameterId} telah direset ke nilai normal.`,
     });
     setIsNormalizing(prev => ({ ...prev, [parameterId]: false }));
   }, [toast]);
@@ -182,7 +183,7 @@ export default function WaterQualityClientPage() {
           basicRecommendations: id.basicRecommendations,
           predictiveInsights: id.predictiveInsights
         })) : undefined,
-        monthlyRecap: summaryResult.monthlyRecap ? { // Updated from weeklyRecap
+        monthlyRecap: summaryResult.monthlyRecap ? { 
           recapTitle: summaryResult.monthlyRecap.recapTitle,
           sensorDataTable: summaryResult.monthlyRecap.sensorDataTable,
           graphicalTrendSummary: summaryResult.monthlyRecap.graphicalTrendSummary,
@@ -208,6 +209,9 @@ export default function WaterQualityClientPage() {
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <Header />
       <main className="flex-1 p-4 sm:p-6 md:p-8 container mx-auto">
+        
+        <CurrentDateTime /> {/* Added CurrentDateTime component */}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
           {parameters.map((param) => (
             <ParameterCard
@@ -224,10 +228,10 @@ export default function WaterQualityClientPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <CardTitle className="text-2xl font-bold text-primary flex items-center">
-                        <Brain className="mr-2 h-7 w-7"/> AI-Powered Water Quality Analysis
+                        <Brain className="mr-2 h-7 w-7"/> Analisis Kualitas Air Berbasis AI
                     </CardTitle>
                     <CardDescription>
-                        Get an intelligent summary of your water conditions and actionable insights.
+                        Dapatkan ringkasan cerdas kondisi air Anda dan wawasan yang dapat ditindaklanjuti.
                     </CardDescription>
                 </div>
                 <Button onClick={handleGenerateSummary} disabled={isLoadingSummary} size="lg">
@@ -236,7 +240,7 @@ export default function WaterQualityClientPage() {
                 ) : (
                     <Sparkles className="mr-2 h-5 w-5" />
                 )}
-                Generate Full Analysis
+                Buat Analisis Lengkap
                 </Button>
             </div>
           </CardHeader>
@@ -244,14 +248,14 @@ export default function WaterQualityClientPage() {
             {isLoadingSummary && (
               <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-lg">Generating your detailed water quality analysis...</p>
-                <p>This may take a moment.</p>
+                <p className="text-lg">Menghasilkan analisis kualitas air terperinci Anda...</p>
+                <p>Ini mungkin membutuhkan waktu sejenak.</p>
               </div>
             )}
             {!isLoadingSummary && aiSummary && (
               <div className="space-y-6">
                 <div className="p-4 border rounded-lg bg-background">
-                  <h3 className="text-xl font-semibold text-primary mb-2 flex items-center"><FileText className="mr-2 h-5 w-5"/>Overall Assessment</h3>
+                  <h3 className="text-xl font-semibold text-primary mb-2 flex items-center"><FileText className="mr-2 h-5 w-5"/>Penilaian Keseluruhan</h3>
                   <p className="text-foreground">{aiSummary.overallAssessment}</p>
                 </div>
 
@@ -259,7 +263,7 @@ export default function WaterQualityClientPage() {
                   <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="detailed-analysis">
                       <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                        <div className="flex items-center"><Activity className="mr-2 h-5 w-5"/>Detailed Parameter Analysis</div>
+                        <div className="flex items-center"><Activity className="mr-2 h-5 w-5"/>Analisis Parameter Terperinci</div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 space-y-3">
                         {aiSummary.detailedAnalysis.map((item, index) => (
@@ -280,7 +284,7 @@ export default function WaterQualityClientPage() {
                    <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="hourly-trends">
                       <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                        <div className="flex items-center"><BarChart3 className="mr-2 h-5 w-5"/>Hourly Trend Analysis</div>
+                        <div className="flex items-center"><BarChart3 className="mr-2 h-5 w-5"/>Analisis Tren Per Jam</div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 space-y-3">
                         <p className="text-sm text-muted-foreground mb-2">{aiSummary.hourlyTrendAnalysis.introduction}</p>
@@ -289,7 +293,7 @@ export default function WaterQualityClientPage() {
                             <h4 className="font-semibold text-md text-foreground">{trend.parameterName}</h4>
                             <p className="text-sm text-muted-foreground">{trend.trendDescription}</p>
                             {trend.averageHourlyChange !== undefined && (
-                                <p className="text-xs text-accent">Avg. Hourly Change: {trend.averageHourlyChange.toFixed(2)}</p>
+                                <p className="text-xs text-accent">Rata2 Perubahan Per Jam: {trend.averageHourlyChange.toFixed(2)}</p>
                             )}
                           </div>
                         ))}
@@ -302,26 +306,26 @@ export default function WaterQualityClientPage() {
                    <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="instability-diagnosis">
                       <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                         <div className="flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-orange-500"/>Instability Diagnosis</div>
+                         <div className="flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-orange-500"/>Diagnosis Ketidakstabilan</div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 space-y-4">
                         {aiSummary.instabilityDiagnosis.map((diag: InstabilityInfo, index: number) => (
                           <div key={index} className="p-3 border rounded-md bg-orange-500/10 border-orange-500/30">
                             <h4 className="font-semibold text-md text-orange-700">{diag.parameterName}</h4>
-                            <p className="text-sm text-orange-600"><span className="font-medium">Problem:</span> {diag.problemDescription}</p>
+                            <p className="text-sm text-orange-600"><span className="font-medium">Masalah:</span> {diag.problemDescription}</p>
                             <div className="mt-1">
-                              <p className="text-xs text-orange-600 font-medium">Possible Causes:</p>
+                              <p className="text-xs text-orange-600 font-medium">Kemungkinan Penyebab:</p>
                               <ul className="list-disc list-inside text-xs text-orange-600">
                                 {diag.possibleCauses.map((cause, i) => <li key={i}>{cause}</li>)}
                               </ul>
                             </div>
                             <div className="mt-1">
-                              <p className="text-xs text-orange-600 font-medium">Recommendations:</p>
+                              <p className="text-xs text-orange-600 font-medium">Rekomendasi:</p>
                               <ul className="list-disc list-inside text-xs text-orange-600">
                                 {diag.basicRecommendations.map((rec, i) => <li key={i}>{rec}</li>)}
                               </ul>
                             </div>
-                             {diag.predictiveInsights && <p className="text-xs text-orange-600 mt-1"><span className="font-medium">Predictions:</span> {diag.predictiveInsights}</p>}
+                             {diag.predictiveInsights && <p className="text-xs text-orange-600 mt-1"><span className="font-medium">Prediksi:</span> {diag.predictiveInsights}</p>}
                           </div>
                         ))}
                       </AccordionContent>
@@ -329,11 +333,11 @@ export default function WaterQualityClientPage() {
                   </Accordion>
                 )}
 
-                {aiSummary.monthlyRecap && ( // Changed from weeklyRecap
+                {aiSummary.monthlyRecap && ( 
                   <Accordion type="single" collapsible className="w-full" defaultValue="monthly-recap">
                     <AccordionItem value="monthly-recap">
                       <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
-                        <div className="flex items-center"><CalendarDays className="mr-2 h-5 w-5"/>{aiSummary.monthlyRecap.recapTitle || "Monthly Sensor Data Recap"}</div>
+                        <div className="flex items-center"><CalendarDays className="mr-2 h-5 w-5"/>{aiSummary.monthlyRecap.recapTitle || "Rekap Data Sensor Bulanan"}</div>
                       </AccordionTrigger>
                       <AccordionContent className="pt-2 space-y-4">
                         {aiSummary.monthlyRecap.dataSufficiencyNote && (
@@ -342,18 +346,18 @@ export default function WaterQualityClientPage() {
                         {aiSummary.monthlyRecap.sensorDataTable && aiSummary.monthlyRecap.sensorDataTable.length > 0 ? (
                           <Card>
                             <CardHeader>
-                              <CardTitle className="text-lg">Daily Average Sensor Readings (Monthly)</CardTitle>
+                              <CardTitle className="text-lg">Rata-rata Pembacaan Sensor Harian (Bulanan)</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead>Day</TableHead>
-                                    <TableHead className="text-center">Avg. pH</TableHead>
-                                    <TableHead className="text-center">Avg. Salinity (ppt)</TableHead>
-                                    <TableHead className="text-center">Avg. DO (mg/L)</TableHead>
-                                    <TableHead className="text-center">Avg. Temp (°C)</TableHead>
-                                    <TableHead>Notes</TableHead>
+                                    <TableHead>Hari</TableHead>
+                                    <TableHead className="text-center">Rata2 pH</TableHead>
+                                    <TableHead className="text-center">Rata2 Salinitas (ppt)</TableHead>
+                                    <TableHead className="text-center">Rata2 DO (mg/L)</TableHead>
+                                    <TableHead className="text-center">Rata2 Suhu (°C)</TableHead>
+                                    <TableHead>Catatan</TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -369,18 +373,18 @@ export default function WaterQualityClientPage() {
                                   ))}
                                 </TableBody>
                                 {aiSummary.monthlyRecap.sensorDataTable.length === 0 && (
-                                   <TableCaption>No daily data available for the table for this month.</TableCaption>
+                                   <TableCaption>Tidak ada data harian yang tersedia untuk tabel bulan ini.</TableCaption>
                                 )}
                               </Table>
                             </CardContent>
                           </Card>
                         ) : (
-                          <p className="text-sm text-muted-foreground">No detailed daily data available to display in a table for this month.</p>
+                          <p className="text-sm text-muted-foreground">Tidak ada data harian terperinci yang tersedia untuk ditampilkan dalam tabel untuk bulan ini.</p>
                         )}
 
                         <div className="p-4 border rounded-lg bg-background mt-4">
-                           <h4 className="text-lg font-semibold text-primary mb-2 flex items-center"><LineChartIcon className="mr-2 h-5 w-5"/>Graphical Trend Summary (Monthly)</h4>
-                           <p className="text-sm text-foreground">{aiSummary.monthlyRecap.graphicalTrendSummary || "No monthly graphical trend summary available."}</p>
+                           <h4 className="text-lg font-semibold text-primary mb-2 flex items-center"><LineChartIcon className="mr-2 h-5 w-5"/>Ringkasan Tren Grafis (Bulanan)</h4>
+                           <p className="text-sm text-foreground">{aiSummary.monthlyRecap.graphicalTrendSummary || "Tidak ada ringkasan tren grafis bulanan yang tersedia."}</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -392,8 +396,8 @@ export default function WaterQualityClientPage() {
             {!isLoadingSummary && !aiSummary && (
               <div className="text-center p-10 text-muted-foreground">
                 <Sparkles className="mx-auto h-12 w-12 text-primary mb-4" />
-                <p className="text-lg">Click the button above to generate your water quality analysis.</p>
-                <p>The AI will provide insights based on current and historical data.</p>
+                <p className="text-lg">Klik tombol di atas untuk menghasilkan analisis kualitas air Anda.</p>
+                <p>AI akan memberikan wawasan berdasarkan data saat ini dan historis.</p>
               </div>
             )}
           </CardContent>
@@ -402,5 +406,3 @@ export default function WaterQualityClientPage() {
     </div>
   );
 }
-
-    
