@@ -9,7 +9,7 @@ const geistSans = GeistSans;
 const geistMono = GeistMono;
 
 export const metadata: Metadata = {
-  title: 'AquaGuard - Water Quality Monitoring',
+  title: 'Water Quality Monitoring',
   description: 'Monitor water quality parameters and get AI-powered insights.',
 };
 

@@ -78,7 +78,7 @@ export function LoginForm() {
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Welcome Back!</CardTitle>
         <CardDescription className="text-muted-foreground">
-          Sign in to access your AquaGuard dashboard.
+          Sign in to access your Water Quality dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -136,7 +136,7 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col items-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          New to AquaGuard?{" "}
+          New to Water Quality?{" "}
           <Link href="/register" className="font-medium text-primary hover:underline">
             Create an Account
           </Link>

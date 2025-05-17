@@ -34,12 +34,12 @@ export function AppLogo({ size = 'compact', className }: AppLogoProps) {
           className={`${isLarge ? 'h-12 w-12 mr-3' : 'h-8 w-8 mr-2'} text-primary`} 
         />
         <h1 className={`font-bold ${isLarge ? 'text-4xl' : 'text-2xl'} text-primary`}>
-          AquaGuard
+          Water Quality
         </h1>
       </div>
       {isLarge && (
         <p className="text-sm text-muted-foreground mt-1">
-          Water Quality Monitoring
+          Monitoring Application
         </p>
       )}
     </div>

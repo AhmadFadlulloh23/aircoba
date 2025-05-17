@@ -82,7 +82,7 @@ export function RegisterForm() {
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold text-primary">Create Your Account</CardTitle>
         <CardDescription className="text-muted-foreground">
-          Join AquaGuard to start monitoring water quality.
+          Join Water Quality to start monitoring.
         </CardDescription>
       </CardHeader>
       <CardContent>
