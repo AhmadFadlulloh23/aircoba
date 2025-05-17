@@ -41,8 +41,7 @@ export function LoginForm() {
     setErrorMessage(null);
     try {
       // Use the simulated login function
-      // For demo: user@example.com / password
-      const normalizedEmail = data.email.trim(); 
+      const normalizedEmail = data.email.trim();
       const result = await login(normalizedEmail, data.password);
 
       if (result.success) {
