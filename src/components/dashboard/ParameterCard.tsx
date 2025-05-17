@@ -1,10 +1,11 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { WaterParameterData } from "@/types";
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip as RechartsTooltip } from "recharts";
-import { TrendingUp, SettingsBackupRestore } from "lucide-react";
+import { TrendingUp, RotateCcw } from "lucide-react";
 
 interface ParameterCardProps {
   parameter: WaterParameterData;
@@ -93,7 +94,7 @@ export function ParameterCard({ parameter, onNormalize, isNormalizing }: Paramet
             onClick={() => onNormalize(parameter.id)}
             disabled={isNormalizing}
           >
-            <SettingsBackupRestore className="mr-2 h-4 w-4" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             Normalize {parameter.name}
           </Button>
         </CardFooter>
