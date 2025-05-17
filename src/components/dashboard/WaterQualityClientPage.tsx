@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -6,18 +7,20 @@ import { ParameterCard } from "./ParameterCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { initialWaterParameters, calculateStatus, normalizeParameter as getNormalizedValue, parameterUnits, parameterDisplayNames } from "@/lib/water-quality-config";
-import type { WaterParameterData, StructuredAISummary, HourlyTrend, InstabilityInfo } from "@/types";
-import { getAISummaryAction, normalizeParameterAction } from "@/app/dashboard/actions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from "@/components/ui/table";
+import { initialWaterParameters, calculateStatus, parameterUnits, parameterDisplayNames } from "@/lib/water-quality-config";
+import type { WaterParameterData, StructuredAISummary, HourlyTrend, InstabilityInfo, WeeklySensorReading } from "@/types";
+import { getAISummaryAction } from "@/app/dashboard/actions";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Sparkles, FileText, Thermometer, Droplet, Wind, Activity, BarChart3, Brain } from "lucide-react";
+import { Loader2, AlertTriangle, Sparkles, FileText, Thermometer, Droplet, Wind, Activity, BarChart3, Brain, CalendarDays, LineChart as LineChartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import type { GenerateWaterQualitySummaryInput } from "@/ai/flows/generate-water-quality-summary";
+import type { GenerateWaterQualitySummaryInput, GenerateWaterQualitySummaryOutput } from "@/ai/flows/generate-water-quality-summary";
 
 const MAX_HISTORY_LENGTH = 20; // For live graphs
 const SIMULATION_INTERVAL = 3000; // 3 seconds for live graph updates
 const STATUS_NOTIFICATION_INTERVAL = 30000; // 30 seconds for status change checks
+const AI_HOURLY_VALUES_COUNT = 7 * 24; // Simulate 7 days of hourly data for AI
 
 export default function WaterQualityClientPage() {
   const router = useRouter();
@@ -36,7 +39,6 @@ export default function WaterQualityClientPage() {
     }
   }, [router]);
 
-  // Initialize lastNotifiedStatus
   useEffect(() => {
     const initialStatuses: Record<string, string> = {};
     initialWaterParameters.forEach(p => {
@@ -45,19 +47,15 @@ export default function WaterQualityClientPage() {
     setLastNotifiedStatus(initialStatuses);
   }, []);
 
-
-  // Simulate live sensor data updates for graphs
   useEffect(() => {
     const intervalId = setInterval(() => {
       setParameters((prevParams) =>
         prevParams.map((param) => {
           let newValue = param.value;
-          // Simulate fluctuation: up to 5% of a typical range for each parameter
           const fluctuationRange = param.id === 'ph' ? 0.2 : (param.id === 'salinity' ? 2 : (param.id === 'do' ? 0.5 : 1));
           const fluctuation = (Math.random() - 0.5) * fluctuationRange;
           newValue += fluctuation;
 
-          // Clamp values to realistic ranges
           if (param.id === 'ph') newValue = Math.max(0, Math.min(14, newValue));
           else if (param.id === 'salinity') newValue = Math.max(0, Math.min(50, newValue));
           else if (param.id === 'do') newValue = Math.max(0, Math.min(20, newValue));
@@ -72,7 +70,6 @@ export default function WaterQualityClientPage() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Update status and check for notifications periodically
    useEffect(() => {
     const statusUpdateIntervalId = setInterval(() => {
       let statusChanges: Array<{ name: string, oldStatus: string, newStatus: string}> = [];
@@ -90,7 +87,7 @@ export default function WaterQualityClientPage() {
 
       if (statusChanges.length > 0) {
         const changedParamDetails = statusChanges.map(s => `${s.name} changed to ${s.newStatus}`).join(', ');
-        setTimeout(() => { // Defer toast to avoid React warning during render
+        setTimeout(() => { 
           toast({
             title: "Water Quality Alert",
             description: `Status updated: ${changedParamDetails}.`,
@@ -99,10 +96,6 @@ export default function WaterQualityClientPage() {
           });
         }, 0);
         
-        const newLastStatuses: Record<string, string> = {...lastNotifiedStatus};
-        statusChanges.forEach(change => {
-            newLastStatuses[change.name.toLowerCase().replace(/\s+/g, '')] = change.newStatus; // Assuming param.id is like this
-        });
          setLastNotifiedStatus(prev => {
             const updated = {...prev};
             statusChanges.forEach(s => {
@@ -120,26 +113,23 @@ export default function WaterQualityClientPage() {
 
   const handleNormalizeParameter = useCallback(async (parameterId: string) => {
     setIsNormalizing(prev => ({ ...prev, [parameterId]: true }));
-    const result = await normalizeParameterAction(parameterId);
-    if (result.success && result.newValue !== undefined && result.newStatus) {
-      setParameters((prevParams) =>
+    // For this demo, we'll use a client-side normalization helper.
+    // In a real app, this might call a server action if normalization has side effects or needs logging.
+    const { normalizeParameter: getNormalizedValueClient } = await import("@/lib/water-quality-config");
+    const newValue = getNormalizedValueClient(parameterId);
+    const { status: newStatus, color: newColor } = calculateStatus(parameterId, newValue);
+
+    setParameters((prevParams) =>
         prevParams.map((p) =>
-          p.id === parameterId
-            ? { ...p, value: result.newValue!, status: result.newStatus!, color: calculateStatus(parameterId, result.newValue!).color, valueHistory: [...p.valueHistory, result.newValue!].slice(-MAX_HISTORY_LENGTH) }
+        p.id === parameterId
+            ? { ...p, value: newValue, status: newStatus, color: newColor, valueHistory: [...p.valueHistory, newValue].slice(-MAX_HISTORY_LENGTH) }
             : p
         )
-      );
-      toast({
+    );
+    toast({
         title: "Parameter Normalized",
-        description: `${result.parameterName} has been reset to a normal value.`,
-      });
-    } else {
-      toast({
-        title: "Normalization Failed",
-        description: result.error || `Could not normalize ${result.parameterName}.`,
-        variant: "destructive",
-      });
-    }
+        description: `${parameterDisplayNames[parameterId] || parameterId} has been reset to a normal value.`,
+    });
     setIsNormalizing(prev => ({ ...prev, [parameterId]: false }));
   }, [toast]);
 
@@ -148,23 +138,21 @@ export default function WaterQualityClientPage() {
     setAiSummary(null);
 
     const aiInput: GenerateWaterQualitySummaryInput = parameters.reduce((acc, param) => {
-      // Simulate recent hourly values for the AI
-      // This is a simple simulation; a real app would fetch this from a database
       const recentHourlyValues: number[] = [];
       let lastVal = param.value;
-      for (let i = 0; i < 3; i++) { // e.g., 3 previous hours
+      for (let i = 0; i < AI_HOURLY_VALUES_COUNT; i++) { 
         const fluctuationRange = param.id === 'ph' ? 0.5 : (param.id === 'salinity' ? 5 : (param.id === 'do' ? 1 : 2));
-        lastVal = lastVal + (Math.random() - 0.5) * fluctuationRange;
-         // Clamp simulated hourly values
-        if (param.id === 'ph') lastVal = Math.max(5, Math.min(9, lastVal)); // reasonable range for pH hourly
-        else if (param.id === 'salinity') lastVal = Math.max(25, Math.min(45, lastVal));
-        else if (param.id === 'do') lastVal = Math.max(3, Math.min(10, lastVal));
-        else if (param.id === 'temperature') lastVal = Math.max(15, Math.min(35, lastVal));
-        recentHourlyValues.unshift(parseFloat(lastVal.toFixed(2))); // Add to beginning, oldest first
+        lastVal = lastVal + (Math.random() - 0.5) * fluctuationRange * ( (i % 24 < 6 || i % 24 > 18) ? 0.8 : 1.2); // Simulate some day/night cycle
+        
+        if (param.id === 'ph') lastVal = Math.max(5, Math.min(9.5, lastVal));
+        else if (param.id === 'salinity') lastVal = Math.max(20, Math.min(48, lastVal));
+        else if (param.id === 'do') lastVal = Math.max(2, Math.min(12, lastVal));
+        else if (param.id === 'temperature') lastVal = Math.max(10, Math.min(38, lastVal));
+        recentHourlyValues.unshift(parseFloat(lastVal.toFixed(param.id === 'ph' ? 1 : 2)));
       }
       
       acc[param.id as keyof GenerateWaterQualitySummaryInput] = {
-        currentValue: parseFloat(param.value.toFixed(2)),
+        currentValue: parseFloat(param.value.toFixed(param.id === 'ph' ? 1 : 2)),
         status: param.status,
         recentHourlyValues: recentHourlyValues,
         unit: parameterUnits[param.id] || '',
@@ -172,49 +160,51 @@ export default function WaterQualityClientPage() {
       return acc;
     }, {} as GenerateWaterQualitySummaryInput);
     
-    const summaryResult = await getAISummaryAction(aiInput);
+    const summaryResult: GenerateWaterQualitySummaryOutput = await getAISummaryAction(aiInput);
     
-    // Adapt the AI flow's output to the StructuredAISummary type
-    // This assumes summaryResult matches GenerateWaterQualitySummaryOutput
     if (summaryResult) {
        setAiSummary({
         overallAssessment: summaryResult.overallAssessment,
         detailedAnalysis: summaryResult.detailedAnalysis.map(da => ({
-          parameter: parameterDisplayNames[da.parameter.toLowerCase().replace(/\s+/g, '')] || da.parameter, // Map to display name
+          parameter: parameterDisplayNames[da.parameter.toLowerCase().replace(/\s+/g, '').replace('level','').replace('dissolvedoxygen','do')] || da.parameter,
           analysis: da.analysis
         })),
         hourlyTrendAnalysis: summaryResult.hourlyTrendAnalysis ? {
           introduction: summaryResult.hourlyTrendAnalysis.introduction,
           parameterTrends: summaryResult.hourlyTrendAnalysis.parameterTrends.map(pt => ({
-            parameterName: parameterDisplayNames[pt.parameterName.toLowerCase().replace(/\s+/g, '')] || pt.parameterName,
+            parameterName: parameterDisplayNames[pt.parameterName.toLowerCase().replace(/\s+/g, '').replace('level','').replace('dissolvedoxygen','do')] || pt.parameterName,
             trendDescription: pt.trendDescription,
             averageHourlyChange: pt.averageHourlyChange
           }))
         } : undefined,
         instabilityDiagnosis: summaryResult.instabilityDiagnosis ? summaryResult.instabilityDiagnosis.map(id => ({
-          parameterName: parameterDisplayNames[id.parameterName.toLowerCase().replace(/\s+/g, '')] || id.parameterName,
+          parameterName: parameterDisplayNames[id.parameterName.toLowerCase().replace(/\s+/g, '').replace('level','').replace('dissolvedoxygen','do')] || id.parameterName,
           problemDescription: id.problemDescription,
           possibleCauses: id.possibleCauses,
           basicRecommendations: id.basicRecommendations,
           predictiveInsights: id.predictiveInsights
         })) : undefined,
-        generalRecommendations: summaryResult.generalRecommendations,
+        weeklyRecap: summaryResult.weeklyRecap ? {
+          recapTitle: summaryResult.weeklyRecap.recapTitle,
+          sensorDataTable: summaryResult.weeklyRecap.sensorDataTable,
+          graphicalTrendSummary: summaryResult.weeklyRecap.graphicalTrendSummary,
+          dataSufficiencyNote: summaryResult.weeklyRecap.dataSufficiencyNote
+        } : undefined,
       });
     }
-
     setIsLoadingSummary(false);
   };
   
   const getIconForParameter = (paramId: string) => {
-    switch(paramId) {
+    const cleanParamId = paramId.toLowerCase().replace(/\s+/g, '').replace('level','').replace('dissolvedoxygen','do');
+    switch(cleanParamId) {
       case 'ph': return <Droplet className="mr-2 h-5 w-5 text-blue-500" />;
-      case 'salinity': return <Activity className="mr-2 h-5 w-5 text-teal-500" />; // Using Activity for salinity variation
+      case 'salinity': return <Activity className="mr-2 h-5 w-5 text-teal-500" />;
       case 'do': return <Wind className="mr-2 h-5 w-5 text-green-500" />;
       case 'temperature': return <Thermometer className="mr-2 h-5 w-5 text-red-500" />;
       default: return <FileText className="mr-2 h-5 w-5 text-gray-500" />;
     }
   };
-
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -277,7 +267,7 @@ export default function WaterQualityClientPage() {
                         {aiSummary.detailedAnalysis.map((item, index) => (
                           <div key={index} className="p-3 border rounded-md bg-background/50">
                             <h4 className="font-semibold text-md text-foreground flex items-center">
-                              {getIconForParameter(item.parameter.toLowerCase().replace(" level", "").replace("dissolved oxygen", "do"))} 
+                              {getIconForParameter(item.parameter)} 
                               {item.parameter}
                             </h4>
                             <p className="text-sm text-muted-foreground">{item.analysis}</p>
@@ -341,15 +331,62 @@ export default function WaterQualityClientPage() {
                   </Accordion>
                 )}
 
-                {aiSummary.generalRecommendations && aiSummary.generalRecommendations.length > 0 && (
-                  <div className="p-4 border rounded-lg bg-accent/10 border-accent/30">
-                    <h3 className="text-xl font-semibold text-accent-foreground mb-2">General Recommendations</h3>
-                    <ul className="list-disc list-inside space-y-1 text-foreground">
-                      {aiSummary.generalRecommendations.map((rec, index) => (
-                        <li key={index}>{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
+                {aiSummary.weeklyRecap && (
+                  <Accordion type="single" collapsible className="w-full" defaultValue="weekly-recap">
+                    <AccordionItem value="weekly-recap">
+                      <AccordionTrigger className="text-xl font-semibold text-primary hover:no-underline">
+                        <div className="flex items-center"><CalendarDays className="mr-2 h-5 w-5"/>{aiSummary.weeklyRecap.recapTitle || "Weekly Sensor Data Recap"}</div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-2 space-y-4">
+                        {aiSummary.weeklyRecap.dataSufficiencyNote && (
+                          <p className="text-sm text-muted-foreground italic">{aiSummary.weeklyRecap.dataSufficiencyNote}</p>
+                        )}
+                        {aiSummary.weeklyRecap.sensorDataTable && aiSummary.weeklyRecap.sensorDataTable.length > 0 ? (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Daily Average Sensor Readings</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Day</TableHead>
+                                    <TableHead className="text-center">Avg. pH</TableHead>
+                                    <TableHead className="text-center">Avg. Salinity (ppt)</TableHead>
+                                    <TableHead className="text-center">Avg. DO (mg/L)</TableHead>
+                                    <TableHead className="text-center">Avg. Temp (°C)</TableHead>
+                                    <TableHead>Notes</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {aiSummary.weeklyRecap.sensorDataTable.map((reading: WeeklySensorReading, index: number) => (
+                                    <TableRow key={index}>
+                                      <TableCell className="font-medium">{reading.day}</TableCell>
+                                      <TableCell className="text-center">{reading.avgPh?.toFixed(1) ?? '-'}</TableCell>
+                                      <TableCell className="text-center">{reading.avgSalinity?.toFixed(1) ?? '-'}</TableCell>
+                                      <TableCell className="text-center">{reading.avgDo?.toFixed(1) ?? '-'}</TableCell>
+                                      <TableCell className="text-center">{reading.avgTemperature?.toFixed(1) ?? '-'}</TableCell>
+                                      <TableCell className="text-xs">{reading.notes ?? '-'}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                                {aiSummary.weeklyRecap.sensorDataTable.length === 0 && (
+                                   <TableCaption>No daily data available for the table.</TableCaption>
+                                )}
+                              </Table>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No detailed daily data available to display in a table.</p>
+                        )}
+
+                        <div className="p-4 border rounded-lg bg-background mt-4">
+                           <h4 className="text-lg font-semibold text-primary mb-2 flex items-center"><LineChartIcon className="mr-2 h-5 w-5"/>Graphical Trend Summary (Weekly)</h4>
+                           <p className="text-sm text-foreground">{aiSummary.weeklyRecap.graphicalTrendSummary || "No graphical trend summary available."}</p>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 )}
 
               </div>
@@ -367,3 +404,5 @@ export default function WaterQualityClientPage() {
     </div>
   );
 }
+
+    

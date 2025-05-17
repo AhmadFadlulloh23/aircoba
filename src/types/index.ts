@@ -1,3 +1,4 @@
+
 import type { GenerateWaterQualitySummaryOutput } from "@/ai/flows/generate-water-quality-summary";
 
 export interface User {
@@ -33,7 +34,7 @@ export interface WaterParameterData {
 }
 
 // Mirroring the structured AI output
-export type AISummary = GenerateWaterQualitySummaryOutput;
+export type AISummary = GenerateWaterQualitySummaryOutput; // This will now include weeklyRecap
 
 export interface HourlyTrend {
   parameterName: string;
@@ -49,6 +50,23 @@ export interface InstabilityInfo {
   predictiveInsights?: string;
 }
 
+// Types for the new Weekly Recap structure
+export interface WeeklySensorReading {
+  day: string;
+  avgPh?: number | null;
+  avgSalinity?: number | null;
+  avgDo?: number | null;
+  avgTemperature?: number | null;
+  notes?: string;
+}
+
+export interface WeeklyRecap {
+  recapTitle: string;
+  sensorDataTable: WeeklySensorReading[];
+  graphicalTrendSummary: string;
+  dataSufficiencyNote?: string;
+}
+
 // Used for client-side AI summary state
 export interface StructuredAISummary {
   overallAssessment: string;
@@ -58,5 +76,7 @@ export interface StructuredAISummary {
     parameterTrends: HourlyTrend[];
   };
   instabilityDiagnosis?: InstabilityInfo[];
-  generalRecommendations: string[];
+  weeklyRecap?: WeeklyRecap; // Changed from generalRecommendations
 }
+
+    
