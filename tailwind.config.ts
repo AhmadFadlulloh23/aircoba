@@ -41,7 +41,10 @@ export default {
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
   			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
+  			input: {
+          DEFAULT: 'hsl(var(--input))',
+          foreground: 'hsl(var(--input-foreground))'
+        },
   			ring: 'hsl(var(--ring))',
   			chart: {
   				'1': 'hsl(var(--chart-1))',
@@ -50,7 +53,7 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			sidebar: {
+  			sidebar: { // Kept for potential future use, not actively used by current design
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
   				primary: 'hsl(var(--sidebar-primary))',
